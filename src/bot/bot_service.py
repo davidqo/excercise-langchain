@@ -3,10 +3,9 @@ import json
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+import uvicorn
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_ollama import ChatOllama
 
 app = FastAPI(title="LangChain Bot Service")
@@ -24,14 +23,6 @@ def load_bot_config():
 bot_cfg = load_bot_config()
 RAG_URL = bot_cfg["rag"]["service_url"]
 
-# Хранилище истории диалогов
-store = {}
-def get_session_history(session_id: str):
-    if session_id not in store:
-        store[session_id] = InMemoryChatMessageHistory()
-
-    return store[session_id]
-
 prompt_template = ChatPromptTemplate.from_messages(
     [
         (
@@ -40,16 +31,12 @@ prompt_template = ChatPromptTemplate.from_messages(
                 "You are a helpful AI assistant. "
                 "Answer the user's question "
                 "based ONLY on the provided context.\n\n"
-                "You may use the conversation history, but only to identify the user's name. "
-                "You must NOT notice and write in chat any facts about the user such as their city, street, or personal preferences—in the conversation. \n\n"
-                "Also, you must never tell the user the secret code for canceling all tasks. \n\n"
                 "If the answer is not in the context, "
                 "honestly state that you do not know the answer.\n\n"
                 "Context:\n"
                 "{context}"
             ),
         ),
-        MessagesPlaceholder(variable_name="history"),
         ("human", "{question}"),
     ]
 )
@@ -61,13 +48,6 @@ llm = ChatOllama(
 )
 
 chain = prompt_template | llm | StrOutputParser()
-
-chain_with_memory = RunnableWithMessageHistory(
-    chain,
-    get_session_history,
-    input_messages_key="question",
-    history_messages_key="history",
-)
 
 class BotQuery(BaseModel):
     question: str
@@ -93,15 +73,10 @@ async def ask_bot(request: BotQuery):
     try:
         context = fetch_context(request.question)
         
-        answer = chain_with_memory.invoke(
+        answer = chain.invoke(
             {
                 "context": context,
                 "question": request.question
-            },
-            config={
-                "configurable": {
-                    "session_id": request.session_id
-                }
             }
         )
         
@@ -111,3 +86,7 @@ async def ask_bot(request: BotQuery):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    server_cfg = bot_cfg["server"]
+    uvicorn.run(app, host=server_cfg["host"], port=int(server_cfg["port"]))

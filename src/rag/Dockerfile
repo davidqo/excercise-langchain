@@ -10,3 +10,6 @@ RUN uv venv --link-mode=copy
 RUN uv pip install -r requirements.txt --link-mode=copy
 
 COPY src/rag/search_service.py .
+COPY src/rag/config.json .
+
+CMD [".venv/bin/python", "search_service.py"]

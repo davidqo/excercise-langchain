@@ -1,5 +1,5 @@
 import asyncio
-import os
+import json
 import time
 import uuid
 from pathlib import Path
@@ -10,9 +10,19 @@ import httpx
 from chainlit.input_widget import Select, Slider, Switch
 
 
-BOT_API_URL = os.getenv("BOT_API_URL", "http://127.0.0.1:8081/ask")
-RAG_API_URL = os.getenv("RAG_API_URL", "http://127.0.0.1:8080/search")
-HTTP_TIMEOUT = float(os.getenv("FRONTEND_HTTP_TIMEOUT", "180"))
+SCRIPT_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = SCRIPT_DIR / "config.json"
+
+
+def load_config() -> dict[str, Any]:
+    with CONFIG_PATH.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+frontend_cfg = load_config()
+BOT_API_URL = frontend_cfg["bot"]["service_url"]
+RAG_API_URL = frontend_cfg["rag"]["service_url"]
+HTTP_TIMEOUT = float(frontend_cfg["http"]["timeout"])
 
 
 def default_settings() -> dict[str, Any]:

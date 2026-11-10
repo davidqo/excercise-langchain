@@ -1,9 +1,12 @@
 {
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8081
+  },
   "rag": {
     "service_url": "http://127.0.0.1:8080/search"
   },
   "llm": {
-    "provider": "ollama",
     "model_name": "local-qwen",
     "provider_host": "192.168.1.120:11434",
     "temperature": 0.3

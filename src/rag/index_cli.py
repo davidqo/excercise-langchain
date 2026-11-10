@@ -6,7 +6,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# 1. Логируем точку старта
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(SCRIPT_DIR, "config.json")
 
@@ -32,13 +31,16 @@ def main():
     # Склеиваем пути из конфига с корнем проекта
     raw_docs_dir = cfg["indexer"]["docs_dir"]
     raw_persist_dir = cfg["chroma"]["persist_directory"]
+    raw_embedding_cache_dir = cfg["embeddings"].get("cache_dir", "./.cache/huggingface")
     
     docs_dir = os.path.abspath(os.path.join(ROOT_DIR, raw_docs_dir))
     persist_dir = os.path.abspath(os.path.join(ROOT_DIR, raw_persist_dir))
+    embedding_cache_dir = os.path.abspath(os.path.join(ROOT_DIR, raw_embedding_cache_dir))
     
     print(f"[LOG] Путь к документам из конфига: '{raw_docs_dir}'")
     print(f"[LOG] Итоговый абсолютный путь к документам на ПК: {docs_dir}")
     print(f"[LOG] Итоговый абсолютный путь к базе ChromaDB на ПК: {persist_dir}")
+    print(f"[LOG] Итоговый абсолютный путь к кешу модели эмбеддингов: {embedding_cache_dir}")
     
     # 4. Проверяем физическое существование папки с доками
     if not os.path.exists(docs_dir):
@@ -58,8 +60,15 @@ def main():
 
     # 6. Если файлы есть, пошла стандартная логика
     print("\n🚀 Локальная индексация напрямую в файлы SQLite...")
-    print("-> Инициализация модели эмбеддингов (при первом запуске скачивается, ждем)...")
-    embeddings = HuggingFaceEmbeddings(model_name=cfg["embeddings"]["model_name"])
+    os.makedirs(embedding_cache_dir, exist_ok=True)
+    if os.listdir(embedding_cache_dir):
+        print("-> Инициализация модели эмбеддингов из локального кеша...")
+    else:
+        print("-> Локальный кеш модели пуст. При первом запуске модель будет скачана...")
+    embeddings = HuggingFaceEmbeddings(
+        model_name=cfg["embeddings"]["model_name"],
+        cache_folder=embedding_cache_dir,
+    )
     
     vector_store = Chroma(
         collection_name=cfg["chroma"]["collection_name"],

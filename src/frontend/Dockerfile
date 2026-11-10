@@ -6,7 +6,9 @@ RUN uv venv --link-mode=copy
 RUN uv pip install -r requirements.txt --link-mode=copy
 
 COPY src/frontend/app.py .
+COPY src/frontend/run.py .
+COPY src/frontend/config.json .
 COPY src/frontend/.chainlit ./.chainlit
 COPY src/frontend/public ./public
 
-CMD [".venv/bin/chainlit", "run", "app.py", "--host", "127.0.0.1", "--port", "8000"]
+CMD [".venv/bin/python", "run.py"]
