@@ -136,6 +136,7 @@ def normalize_sources(raw_sources: list[dict[str, Any]]) -> list[dict[str, Any]]
         normalized.append(
             {
                 "title": title,
+                "content": str(source.get("content") or ""),
                 "metadata": safe_metadata,
             }
         )

@@ -15,7 +15,13 @@ export default function RagSources() {
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
           </summary>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">Matched by RAG. Document text is hidden in the UI.</p>
+          {source.content ? (
+            <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded border bg-muted/30 p-3 text-sm leading-6 text-foreground">
+              {source.content}
+            </pre>
+          ) : (
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Matched by RAG. No document text was returned.</p>
+          )}
           {source.metadata && Object.keys(source.metadata).length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {Object.entries(source.metadata).map(([key, value]) => (

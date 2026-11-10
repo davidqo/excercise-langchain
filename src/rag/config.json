@@ -8,7 +8,7 @@
     "persist_directory": "./chroma_data"
   },
   "embeddings": {
-    "model_name": "all-MiniLM-L6-v2",
+    "model_name": "deepvk/USER-bge-m3",
     "cache_dir": "./.cache/huggingface"
   },
   "indexer": {
