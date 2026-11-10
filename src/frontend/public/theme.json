@@ -1,0 +1,20 @@
+{
+  "light": {
+    "primary": {
+      "main": "#0f766e",
+      "dark": "#115e59",
+      "light": "#ccfbf1"
+    },
+    "background": "#f8fafc",
+    "paper": "#ffffff"
+  },
+  "dark": {
+    "primary": {
+      "main": "#2dd4bf",
+      "dark": "#0f766e",
+      "light": "#99f6e4"
+    },
+    "background": "#111827",
+    "paper": "#1f2937"
+  }
+}

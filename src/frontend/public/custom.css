@@ -1,0 +1,11 @@
+:root {
+  --app-accent: #0f766e;
+}
+
+.markdown-body a {
+  color: var(--app-accent);
+}
+
+[data-testid="chat-input"] textarea {
+  font-size: 15px;
+}
